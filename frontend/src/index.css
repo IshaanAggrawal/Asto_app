@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base: #0D0F1A;
+  --bg-surface: #13162A;
+  --bg-card: #191D35;
+  --accent: #F5A623;
+  --accent-dim: #C47D10;
+  --accent-glow: rgba(245, 166, 35, 0.15);
+  --text-primary: #EDE8DC;
+  --text-secondary: #9A94A6;
+  --text-muted: #5C5870;
+  --border: rgba(245, 166, 35, 0.12);
+  --border-strong: rgba(245, 166, 35, 0.3);
+  --danger: #E05C5C;
+  --success: #4CAF7D;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "DM Sans", sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-dim);
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+/* Utility classes */
+@layer components {
+  .glass-panel {
+    background: rgba(19, 22, 42, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+  }
+
+  .card-glow {
+    transition: all 0.3s ease;
+  }
+
+  .card-glow:hover {
+    border-color: var(--border-strong);
+    box-shadow: inset 0 0 30px var(--accent-glow), 0 0 20px rgba(245, 166, 35, 0.05);
+  }
+
+  .amber-button {
+    @apply font-body font-semibold px-6 py-3 rounded-lg transition-all duration-300;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+    color: var(--bg-base);
+    box-shadow: 0 4px 15px rgba(245, 166, 35, 0.25);
+  }
+
+  .amber-button:hover {
+    box-shadow: 0 6px 25px rgba(245, 166, 35, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .amber-button:active {
+    transform: translateY(0);
+  }
+
+  .ghost-button {
+    @apply font-body font-semibold px-6 py-3 rounded-lg transition-all duration-300;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--border-strong);
+  }
+
+  .ghost-button:hover {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+  }
+
+  .arc-divider {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .arc-divider::before {
+    content: "";
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    top: 50%;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg font-body transition-all duration-300 outline-none;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+
+  .input-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .input-field::placeholder {
+    color: var(--text-muted);
+  }
+
+  .zodiac-glyph {
+    @apply inline-block;
+    font-size: 1.2em;
+    color: var(--accent);
+    filter: drop-shadow(0 0 4px var(--accent-glow));
+  }
+}
+
+/* Page transition */
+.page-enter {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.4s ease-out;
+}
+
+/* Typing cursor animation */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.typing-cursor::after {
+  content: "▍";
+  animation: blink 1s infinite;
+  color: var(--accent);
+}

@@ -1,0 +1,12 @@
+fastapi>=0.111
+uvicorn[standard]>=0.29
+langgraph>=0.2
+langchain-groq>=0.1
+immanuel>=1.5
+geopy>=2.4
+timezonefinder==5.2.0
+chromadb>=0.5
+sentence-transformers>=3.0
+python-dotenv
+pydantic>=2.0
+tzdata
