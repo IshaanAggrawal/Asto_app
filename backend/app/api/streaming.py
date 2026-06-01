@@ -6,9 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 async def stream_agent(state: AstroAgentState, thread_id: str):
-    """
-    Generator function that runs the LangGraph and yields SSE events.
-    """
+    """Asynchronous generator orchestrating LangGraph execution and emitting Server-Sent Events (SSE) for real-time clients."""
     try:
         router_buffer = ""
         in_router_think = False
@@ -53,7 +51,7 @@ async def stream_agent(state: AstroAgentState, thread_id: str):
                                     yield f"data: {json.dumps(event)}\n\n"
                             else:
                                 if "</think>" in router_buffer:
-                                    # Find where </think> ends in the new text
+                                    # Locate the termination tag boundary
                                     idx = text.find("</think>")
                                     if idx != -1:
                                         end_idx = idx + len("</think>")
@@ -62,8 +60,7 @@ async def stream_agent(state: AstroAgentState, thread_id: str):
                                         in_router_think = False
                                         router_think_finished = True
                                     else:
-                                        # </think> was split across chunks, but we know it's complete in buffer
-                                        # Just yield the text anyway since the markdown parser will handle it
+                                        # Edge case: closing tag fragmented across SSE chunks
                                         event = {"type": "text", "content": text}
                                         yield f"data: {json.dumps(event)}\n\n"
                                         in_router_think = False
@@ -75,14 +72,14 @@ async def stream_agent(state: AstroAgentState, thread_id: str):
             elif mode == "updates":
                 node_name = list(chunk.keys())[0] if chunk else "unknown"
                 if node_name == "tool_node":
-                    # Tool node finished execution
+                    # Emit completion event for active tool invocation
                     messages = chunk.get("tool_node", {}).get("messages", [])
                     for msg in messages:
                         if hasattr(msg, "name"):
                             event = {"type": "tool_call", "node": msg.name, "status": "done"}
                             yield f"data: {json.dumps(event)}\n\n"
                 elif node_name == "reasoner_node":
-                    # If the reasoner node just output tool calls
+                    # Parse reasoner output to intercept requested tool executions
                     messages = chunk.get(node_name, {}).get("messages", [])
                     if messages:
                         last_message = messages[-1]
@@ -95,7 +92,7 @@ async def stream_agent(state: AstroAgentState, thread_id: str):
                                 }
                                 yield f"data: {json.dumps(event)}\n\n"
         
-        # Signal that the stream is complete
+        # Transmit terminal signal to close client SSE connection
         yield f"data: {json.dumps({'type': 'done'})}\n\n"
         
     except Exception as e:

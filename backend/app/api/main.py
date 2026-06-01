@@ -1,4 +1,4 @@
-import app.ephe_bootstrap  # noqa: F401 — must be first; sets pyswisseph ephe path
+import app.ephe_bootstrap  # Initialize ephemeris C-extension before any other imports
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -32,12 +32,7 @@ app.include_router(router)
 
 @app.on_event("startup")
 async def startup_event():
-    """
-    Warms up the ChromaDB knowledge base on startup.
-    Note: pyswisseph ephemeris path is already bootstrapped at import time
-    inside compute_birth_chart.py and get_daily_transits.py — no need to set
-    it here again.
-    """
+    """Pre-initializes the vector database connection pool during server startup."""
     logger.info("Starting up AstroAgent API...")
     try:
         _get_collection()

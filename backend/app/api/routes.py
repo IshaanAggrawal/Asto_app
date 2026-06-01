@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
 from typing import Optional
+from app.models.schemas import ChartRequest, ChatRequest
 import uuid
 import logging
 
@@ -16,20 +16,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api")
 
-# Simple in-memory store for charts
+# In-memory dictionary acting as the ephemeral database for natal charts.
 CHART_STORE = {}
 
-class ChartRequest(BaseModel):
-    name: str
-    dob: str
-    tob: str
-    place: str
 
-class ChatRequest(BaseModel):
-    message: str
-    chart_id: Optional[str] = None
-    conversation_id: str
-    language: Optional[str] = "English"
 
 @router.post("/chart")
 async def create_chart(request: ChartRequest):
@@ -52,10 +42,10 @@ async def create_chart(request: ChartRequest):
         if "error" in chart_result:
             raise HTTPException(status_code=400, detail=chart_result["error"])
             
-        # 3. Store in memory
+        # 3. Store in ephemeral database
         chart_id = str(uuid.uuid4())
         
-        # Combine everything for the agent
+        # Construct agent payload
         full_chart_data = {
             "birth_details": {
                 "name": request.name,
@@ -93,9 +83,7 @@ async def chat_endpoint(request: ChatRequest):
             chart_data = stored["chart"]
             birth_details = stored["birth_details"]
             
-        # Build initial state
-        # Since we use MemorySaver, sending just the new HumanMessage will append it to history.
-        # We also pass the static data (birth_details, chart_data) so they are available in state.
+        # Initialize graph state with current user context and message payload.
         state: AstroAgentState = {
             "messages": [HumanMessage(content=request.message)],
             "birth_details": birth_details,

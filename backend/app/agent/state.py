@@ -2,15 +2,12 @@ from typing import Annotated, TypedDict
 from langgraph.graph.message import add_messages
 
 class AstroAgentState(TypedDict):
-    """
-    State definition for the AstroAgent LangGraph.
-    This acts as the single source of truth across all nodes.
-    """
+    """Global state representation for the AstroAgent LangGraph execution."""
     messages: Annotated[list, add_messages]
     birth_details: dict          # {name, dob, tob, place, lat, lng, timezone}
-    chart_data: dict | None      # computed natal chart JSON
-    intent: str | None           # "chart_request" | "daily_horoscope" | "free_question"
+    chart_data: dict | None      # Computed natal chart JSON
+    intent: str | None           # Detected user intent
     conversation_id: str
-    tool_calls_made: int         # guard: raise error if > 8
-    conversation_summary: str    # rolling summary of messages older than last 3 turns
-    language: str                # user language preference (e.g. English, Hindi, Hinglish)
+    tool_calls_made: int         # Execution safeguard counter
+    conversation_summary: str    # Rolling context summary
+    language: str                # User language preference
