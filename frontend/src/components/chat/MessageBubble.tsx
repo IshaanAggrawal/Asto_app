@@ -1,5 +1,84 @@
+import { useState, useEffect, useRef } from "react";
 import type { ChatMessage } from "@/store/useUserStore";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+
+const ROUTER_STEPS = [
+  "Assessing the Prompt",
+  "Analyzing Intent",
+  "Selecting Astrology Tools",
+];
+
+const REASONER_STEPS = [
+  "Gathering Relevant Context",
+  "Fetching Vector DB",
+  "Consulting Ephemeris Data",
+  "Analyzing Astrological Alignments",
+  "Synthesizing Interpretation",
+  "Finalizing Insights"
+];
+
+function ThinkingStatus({ isRouter }: { isRouter: boolean }) {
+  const [step, setStep] = useState(0);
+  const steps = isRouter ? ROUTER_STEPS : REASONER_STEPS;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStep((s) => (s + 1) % steps.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [steps.length]);
+
+  return (
+    <span className="text-accent ml-2 font-normal flex items-center gap-1">
+      <span className="flex gap-0.5">
+        <span className="animate-bounce">.</span>
+        <span className="animate-bounce" style={{animationDelay: "0.1s"}}>.</span>
+        <span className="animate-bounce" style={{animationDelay: "0.2s"}}>.</span>
+      </span> 
+      <span className="animate-pulse">{steps[step]}</span>
+    </span>
+  );
+}
+
+function useSmoothStream(targetText: string, isStreaming: boolean, speed: number = 3) {
+  const [displayedText, setDisplayedText] = useState(targetText);
+  const indexRef = useRef(targetText.length);
+
+  useEffect(() => {
+    if (!isStreaming) {
+      setDisplayedText(targetText);
+      indexRef.current = targetText.length;
+      return;
+    }
+
+    if (targetText.length < indexRef.current) {
+      setDisplayedText(targetText);
+      indexRef.current = targetText.length;
+      return;
+    }
+
+    if (indexRef.current === targetText.length) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      indexRef.current += speed;
+      if (indexRef.current >= targetText.length) {
+        indexRef.current = targetText.length;
+        setDisplayedText(targetText);
+        clearInterval(interval);
+      } else {
+        setDisplayedText(targetText.substring(0, indexRef.current));
+      }
+    }, 16);
+
+    return () => clearInterval(interval);
+  }, [targetText, isStreaming, speed]);
+
+  return displayedText;
+}
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -8,6 +87,7 @@ interface MessageBubbleProps {
 
 export default function MessageBubble({ message, isStreaming = false }: MessageBubbleProps) {
   const isUser = message.role === "user";
+  const smoothedContent = useSmoothStream(message.content, !!isStreaming && !isUser);
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
@@ -72,35 +152,56 @@ export default function MessageBubble({ message, isStreaming = false }: MessageB
 
         {/* Message content */}
         <div
-          className={`text-sm leading-relaxed whitespace-pre-wrap font-body prose prose-invert max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 ${isUser ? "text-text-primary" : "text-text-primary"
-            } ${isStreaming && !message.content ? "typing-cursor" : ""}`}
+          className={`text-sm leading-relaxed font-body prose prose-invert max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 ${isUser ? "text-text-primary" : "text-text-primary"
+            } ${isStreaming && !smoothedContent ? "typing-cursor" : ""}`}
         >
-          {message.content ? (
+          {smoothedContent ? (
             (() => {
-              const text = message.content;
-              const thinkMatch = text.match(/<think>([\s\S]*?)(?:<\/think>|$)/i);
+              const text = smoothedContent;
+              const thinkMatches = [...text.matchAll(/<think>([\s\S]*?)(?:<\/think>|$)/gi)];
+              const isThinkingActive = text.includes("<think>") && !text.includes("</think>");
               
-              if (thinkMatch) {
-                const thinkText = thinkMatch[1];
-                const restText = text.replace(/<think>[\s\S]*?(?:<\/think>|$)/i, "").trim();
+              if (thinkMatches.length > 0) {
+                const thinkText = thinkMatches.map(m => m[1].trim()).join("\n\n---\n\n");
+                const restText = text.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
+                
+                // If there are multiple think blocks, the first one is the router (Assessing), second is reasoner (Interpreting)
+                const isRouterThinking = thinkMatches.length === 1 && isThinkingActive;
+                const isReasonerThinking = thinkMatches.length > 1 && isThinkingActive;
                 
                 return (
                   <>
                     <details className="mb-4 group">
-                      <summary className="cursor-pointer text-xs font-semibold text-accent/70 hover:text-accent transition-colors flex items-center gap-1 select-none">
+                      <summary className="cursor-pointer text-xs font-semibold text-accent/70 hover:text-accent transition-colors flex items-center gap-2 select-none">
                         <span className="group-open:rotate-90 transition-transform">▶</span>
                         Thought Process
+                        {isRouterThinking && <ThinkingStatus isRouter={true} />}
+                        {isReasonerThinking && <ThinkingStatus isRouter={false} />}
                       </summary>
                       <div className="mt-2 text-xs text-text-muted border-l-2 border-accent/30 pl-3 py-1 whitespace-pre-wrap font-mono">
                         {thinkText}
                       </div>
                     </details>
-                    {restText && <ReactMarkdown>{restText}</ReactMarkdown>}
+                    {restText && (
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]} 
+                        rehypePlugins={[rehypeRaw]}
+                      >
+                        {restText}
+                      </ReactMarkdown>
+                    )}
                   </>
                 );
               }
               
-              return <ReactMarkdown>{text}</ReactMarkdown>;
+              return (
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]} 
+                  rehypePlugins={[rehypeRaw]}
+                >
+                  {text}
+                </ReactMarkdown>
+              );
             })()
           ) : (
             isStreaming ? "" : "..."

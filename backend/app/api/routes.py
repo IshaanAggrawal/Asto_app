@@ -29,6 +29,7 @@ class ChatRequest(BaseModel):
     message: str
     chart_id: Optional[str] = None
     conversation_id: str
+    language: Optional[str] = "English"
 
 @router.post("/chart")
 async def create_chart(request: ChartRequest):
@@ -101,7 +102,9 @@ async def chat_endpoint(request: ChatRequest):
             "chart_data": chart_data,
             "intent": None,
             "conversation_id": request.conversation_id,
-            "tool_calls_made": 0
+            "tool_calls_made": 0,
+            "conversation_summary": "",  # empty on first message; grows over time
+            "language": request.language,
         }
         
         return StreamingResponse(

@@ -1,3 +1,4 @@
+import app.ephe_bootstrap  # noqa: F401 — must be first; sets pyswisseph ephe path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -31,24 +32,20 @@ app.include_router(router)
 
 @app.on_event("startup")
 async def startup_event():
-    """Warms up the ChromaDB collection on startup."""
+    """
+    Warms up the ChromaDB knowledge base on startup.
+    Note: pyswisseph ephemeris path is already bootstrapped at import time
+    inside compute_birth_chart.py and get_daily_transits.py — no need to set
+    it here again.
+    """
     logger.info("Starting up AstroAgent API...")
     try:
-        # Call the private function to initialize the DB and embed documents if necessary
         _get_collection()
         logger.info("Knowledge base initialized successfully.")
     except Exception as e:
         logger.error(f"Failed to initialize knowledge base on startup: {e}")
-        
-    try:
-        from immanuel.setup import settings
-        import swisseph as swe
-        # Explicitly set the path to the correct absolute path
-        swe.set_ephe_path(settings._file_path)
-        logger.info(f"Explicitly configured swisseph path to: {settings._file_path}")
-    except Exception as e:
-        logger.error(f"Failed to configure swisseph: {e}")
 
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+

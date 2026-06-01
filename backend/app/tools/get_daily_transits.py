@@ -1,4 +1,11 @@
 from langchain_core.tools import tool
+
+# Bootstrap ephemeris path before immanuel import (Windows path fix)
+import swisseph as _swe
+from immanuel.setup import settings as _imm_settings
+_swe.set_ephe_path(_imm_settings._file_path)
+del _swe, _imm_settings
+
 from immanuel import charts, const
 import json
 from datetime import datetime

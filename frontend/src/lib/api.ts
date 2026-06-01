@@ -78,7 +78,8 @@ export interface ChatSSEEvent {
 export async function* streamChat(
   message: string,
   chartId: string | null,
-  conversationId: string
+  conversationId: string,
+  language: string = "English"
 ): AsyncGenerator<ChatSSEEvent> {
   const res = await fetch(`${API_BASE_URL}/api/chat`, {
     method: "POST",
@@ -87,6 +88,7 @@ export async function* streamChat(
       message,
       chart_id: chartId,
       conversation_id: conversationId,
+      language,
     }),
   });
 

@@ -60,6 +60,10 @@ interface UserStore {
   ) => void;
   deleteConversation: (id: string) => void;
 
+  // Preferences
+  languagePref: string;
+  setLanguagePref: (lang: string) => void;
+
   // UI state
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
@@ -172,6 +176,10 @@ export const useUserStore = create<UserStore>()(
             s.activeConversationId === id ? null : s.activeConversationId,
         })),
 
+      /* ── Preferences ────────────────────────────────── */
+      languagePref: "English",
+      setLanguagePref: (lang) => set({ languagePref: lang }),
+
       /* ── UI state ───────────────────────────────────── */
       sidebarOpen: true,
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
@@ -185,6 +193,7 @@ export const useUserStore = create<UserStore>()(
         chartData: state.chartData,
         conversations: state.conversations,
         birthBannerDismissed: state.birthBannerDismissed,
+        languagePref: state.languagePref,
       }),
     }
   )

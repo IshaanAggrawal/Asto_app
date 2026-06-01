@@ -1,9 +1,19 @@
 from langchain_core.tools import tool
-from immanuel import charts
-from immanuel.classes.serialize import ToJSON
 import json
 from datetime import datetime
 import logging
+
+# ── Swiss Ephemeris path must be set BEFORE any immanuel import ───────────────
+# immanuel bundles its own .se1 data files; we just need to tell pyswisseph
+# where they live before any chart object is instantiated.
+import swisseph as _swe
+from immanuel.setup import settings as _imm_settings
+_swe.set_ephe_path(_imm_settings._file_path)
+del _swe, _imm_settings
+# ─────────────────────────────────────────────────────────────────────────────
+
+from immanuel import charts
+from immanuel.classes.serialize import ToJSON
 
 logger = logging.getLogger(__name__)
 

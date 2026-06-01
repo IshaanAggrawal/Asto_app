@@ -76,8 +76,11 @@ async def stream_agent(state: AstroAgentState, thread_id: str):
                 node_name = list(chunk.keys())[0] if chunk else "unknown"
                 if node_name == "tool_node":
                     # Tool node finished execution
-                    event = {"type": "tool_call", "node": node_name, "status": "done"}
-                    yield f"data: {json.dumps(event)}\n\n"
+                    messages = chunk.get("tool_node", {}).get("messages", [])
+                    for msg in messages:
+                        if hasattr(msg, "name"):
+                            event = {"type": "tool_call", "node": msg.name, "status": "done"}
+                            yield f"data: {json.dumps(event)}\n\n"
                 elif node_name == "reasoner_node":
                     # If the reasoner node just output tool calls
                     messages = chunk.get(node_name, {}).get("messages", [])

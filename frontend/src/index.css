@@ -174,3 +174,35 @@ body {
   animation: blink 1s infinite;
   color: var(--accent);
 }
+
+/* Markdown Tables */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.prose th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border-strong);
+  color: var(--accent);
+  font-weight: 600;
+  background: var(--bg-card);
+}
+
+.prose td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.prose tr:last-child td {
+  border-bottom: none;
+}
+
+.prose tr:hover td {
+  background: var(--accent-glow);
+}

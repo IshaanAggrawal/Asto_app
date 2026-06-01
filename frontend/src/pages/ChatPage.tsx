@@ -115,15 +115,29 @@ export default function ChatPage() {
             </h2>
           </div>
 
-          {isStreaming && (
-            <div className="flex items-center gap-2 text-xs text-accent">
-              <div
-                className="w-2 h-2 rounded-full animate-pulse"
-                style={{ background: "var(--accent)" }}
-              />
-              Receiving...
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {/* Language Selector */}
+            <select
+              value={useUserStore().languagePref}
+              onChange={(e) => useUserStore.getState().setLanguagePref(e.target.value)}
+              className="bg-transparent border border-border text-text-secondary text-xs rounded px-2 py-1 outline-none hover:border-accent transition-colors cursor-pointer"
+              style={{ background: "var(--bg-card)" }}
+            >
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Hinglish">Hinglish</option>
+            </select>
+
+            {isStreaming && (
+              <div className="flex items-center gap-2 text-xs text-accent">
+                <div
+                  className="w-2 h-2 rounded-full animate-pulse"
+                  style={{ background: "var(--accent)" }}
+                />
+                Receiving...
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Birth details banner */}

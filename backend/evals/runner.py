@@ -1,3 +1,4 @@
+import app.ephe_bootstrap  # noqa: F401 — must be first; sets pyswisseph ephe path
 import os
 import json
 import time
@@ -37,14 +38,17 @@ def run_evals():
             "chart_data": None,
             "intent": None,
             "conversation_id": f"eval_{case['id']}",
-            "tool_calls_made": 0
+            "tool_calls_made": 0,
+            "conversation_summary": "",
         }
         
         start_time = time.time()
         
         try:
             # Run the agent synchronously
-            final_state = graph.invoke(state)
+            # MemorySaver checkpointer requires a thread_id in config
+            config = {"configurable": {"thread_id": f"eval_{case['id']}"}}
+            final_state = graph.invoke(state, config=config)
             latency = time.time() - start_time
             
             # Analyze output

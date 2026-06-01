@@ -12,3 +12,5 @@ class AstroAgentState(TypedDict):
     intent: str | None           # "chart_request" | "daily_horoscope" | "free_question"
     conversation_id: str
     tool_calls_made: int         # guard: raise error if > 8
+    conversation_summary: str    # rolling summary of messages older than last 3 turns
+    language: str                # user language preference (e.g. English, Hindi, Hinglish)

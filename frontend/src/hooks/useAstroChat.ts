@@ -50,10 +50,12 @@ export function useAstroChat() {
       let fullText = "";
 
       try {
+        const store = useUserStore.getState();
         const stream = streamChat(
           content,
-          chartData?.chart_id || null,
-          convId
+          store.chartData?.chart_id || null,
+          convId,
+          store.languagePref
         );
 
         for await (const event of stream) {
