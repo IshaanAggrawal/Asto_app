@@ -1,11 +1,13 @@
 from langchain_core.tools import tool
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
+from functools import lru_cache
 import logging
 
 logger = logging.getLogger(__name__)
 
 @tool
+@lru_cache(maxsize=128)
 def geocode_place(place_name: str) -> dict:
     """Resolve a place name to lat/lng/timezone. Required before computing birth chart."""
     try:

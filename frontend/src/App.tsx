@@ -21,7 +21,6 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const location = useLocation();
-  const isChatPage = location.pathname === "/chat";
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>

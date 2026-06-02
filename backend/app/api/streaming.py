@@ -5,16 +5,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-async def stream_agent(state: AstroAgentState, thread_id: str):
-    """Asynchronous generator orchestrating LangGraph execution and emitting Server-Sent Events (SSE) for real-time clients."""
+def stream_agent(state: AstroAgentState, thread_id: str):
+    """Synchronous generator orchestrating LangGraph execution and emitting Server-Sent Events (SSE) for real-time clients."""
     try:
-        router_buffer = ""
-        in_router_think = False
-        router_think_finished = False
-        
         config = {"configurable": {"thread_id": thread_id}}
 
-        async for mode, chunk in graph.astream(
+        for mode, chunk in graph.stream(
             state,
             config=config,
             stream_mode=["messages", "updates"]
@@ -33,40 +29,6 @@ async def stream_agent(state: AstroAgentState, thread_id: str):
                             for block in message_chunk.content:
                                 if isinstance(block, dict) and block.get("type") == "text":
                                     event = {"type": "text", "content": block.get("text", "")}
-                                    yield f"data: {json.dumps(event)}\n\n"
-                                    
-                elif node == "router_node" and not router_think_finished:
-                    from langchain_core.messages import AIMessageChunk
-                    if isinstance(message_chunk, AIMessageChunk) and message_chunk.content:
-                        text = message_chunk.content if isinstance(message_chunk.content, str) else ""
-                        if text:
-                            router_buffer += text
-                            if not in_router_think:
-                                if "<think>" in router_buffer:
-                                    in_router_think = True
-                                    idx = router_buffer.find("<think>")
-                                    to_yield = router_buffer[idx:]
-                                    router_buffer = to_yield
-                                    event = {"type": "text", "content": to_yield}
-                                    yield f"data: {json.dumps(event)}\n\n"
-                            else:
-                                if "</think>" in router_buffer:
-                                    # Locate the termination tag boundary
-                                    idx = text.find("</think>")
-                                    if idx != -1:
-                                        end_idx = idx + len("</think>")
-                                        event = {"type": "text", "content": text[:end_idx] + "\n\n"}
-                                        yield f"data: {json.dumps(event)}\n\n"
-                                        in_router_think = False
-                                        router_think_finished = True
-                                    else:
-                                        # Edge case: closing tag fragmented across SSE chunks
-                                        event = {"type": "text", "content": text}
-                                        yield f"data: {json.dumps(event)}\n\n"
-                                        in_router_think = False
-                                        router_think_finished = True
-                                else:
-                                    event = {"type": "text", "content": text}
                                     yield f"data: {json.dumps(event)}\n\n"
             
             elif mode == "updates":

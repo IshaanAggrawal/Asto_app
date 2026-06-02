@@ -1,6 +1,7 @@
 import type { ChartData } from "@/lib/constants";
-import { ZODIAC_GLYPHS, PLANET_GLYPHS } from "@/lib/constants";
+import { PLANET_GLYPHS } from "@/lib/constants";
 import { getSignColor } from "@/lib/zodiacUtils";
+import ZodiacIcon from "@/components/shared/ZodiacIcon";
 
 interface PlanetTableProps {
   data: ChartData;
@@ -37,9 +38,9 @@ export default function PlanetTable({ data }: PlanetTableProps) {
                   </div>
                 </td>
                 <td className="py-3 px-2">
-                  <div className="flex items-center gap-1.5">
-                    <span style={{ color }} className="text-base">
-                      {ZODIAC_GLYPHS[planet.sign]}
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center justify-center">
+                      <ZodiacIcon sign={planet.sign} size="sm" />
                     </span>
                     <span className="text-text-secondary">{planet.sign}</span>
                   </div>

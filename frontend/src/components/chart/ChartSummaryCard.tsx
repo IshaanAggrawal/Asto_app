@@ -78,8 +78,8 @@ export default function ChartSummaryCard({ data, name }: ChartSummaryCardProps) 
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span style={{ color }} className="text-sm">
-                  {ZODIAC_GLYPHS[planet.sign]}
+                <span className="flex items-center justify-center">
+                  <ZodiacIcon sign={planet.sign} size="sm" />
                 </span>
                 <span className="text-text-secondary text-sm">
                   {planet.sign}

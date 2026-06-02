@@ -108,11 +108,7 @@ export default function ChartPage() {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <div
-              className="rounded-2xl p-5 sticky top-24"
-              style={{
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-              }}
+              className="rounded-2xl p-5 sticky top-24 glass-panel card-glow"
             >
               <ChartSummaryCard data={data} name={birthDetails?.name} />
             </div>
@@ -131,11 +127,7 @@ export default function ChartPage() {
               {/* Planet table below chart on mobile */}
               <div className="mt-6 lg:hidden">
                 <div
-                  className="rounded-2xl p-5"
-                  style={{
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border)",
-                  }}
+                  className="rounded-2xl p-5 glass-panel card-glow"
                 >
                   <PlanetTable data={data} />
                 </div>
@@ -151,11 +143,7 @@ export default function ChartPage() {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <div
-              className="rounded-2xl overflow-hidden sticky top-24"
-              style={{
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-              }}
+              className="rounded-2xl overflow-hidden sticky top-24 glass-panel card-glow"
             >
               {/* Tabs */}
               <div className="flex border-b border-border">

@@ -1,9 +1,11 @@
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from app.agent.state import AstroAgentState
-from app.agent.nodes import router_node, reasoner_node, tools
+from app.agent.nodes import router_node, reasoner_node, tools, editor_node
 from app.agent.router import should_continue
+import os
+import sqlite3
 
 def build_graph():
     """Builds and compiles the AstroAgent LangGraph."""
@@ -13,6 +15,7 @@ def build_graph():
     # Add nodes
     builder.add_node("router_node", router_node)
     builder.add_node("reasoner_node", reasoner_node)
+    builder.add_node("editor_node", editor_node)
     
     # Use LangGraph's built-in ToolNode for the tools
     tool_node = ToolNode(tools)
@@ -30,15 +33,23 @@ def build_graph():
         should_continue,
         {
             "tool_node": "tool_node",
-            "END": END
+            "END": "editor_node"
         }
     )
+    
+    builder.add_edge("editor_node", END)
     
     # After tools run, loop back to the reasoner
     builder.add_edge("tool_node", "reasoner_node")
     
     # Compile the graph with memory
-    memory = MemorySaver()
+    db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "checkpoints.sqlite")
+    
+    # Ensure data directory exists
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    
+    conn = sqlite3.connect(db_path, check_same_thread=False)
+    memory = SqliteSaver(conn)
     return builder.compile(checkpointer=memory)
 
 # Provide a ready-to-use graph instance

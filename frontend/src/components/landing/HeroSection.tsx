@@ -252,11 +252,11 @@ export default function HeroSection() {
             <div className="h-px flex-1 max-w-[60px] bg-gradient-to-l from-transparent to-accent/30" />
           </div>
 
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight mb-6 tracking-wide">
-            <span className="text-text-primary">Know yourself</span>
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl leading-tight mb-6 tracking-wide">
+            <span className="text-text-primary sm:whitespace-nowrap">Know yourself</span>
             <br />
             <span
-              className="bg-clip-text text-transparent"
+              className="bg-clip-text text-transparent sm:whitespace-nowrap"
               style={{
                 backgroundImage: "linear-gradient(135deg, var(--accent), #E8C547, var(--accent-dim))",
               }}

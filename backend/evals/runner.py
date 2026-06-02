@@ -40,6 +40,7 @@ def run_evals():
             "conversation_id": f"eval_{case['id']}",
             "tool_calls_made": 0,
             "conversation_summary": "",
+            "language": "English",
         }
         
         start_time = time.time()
@@ -136,6 +137,9 @@ def run_evals():
                 "judge_score": {"warmth": 0, "accuracy": 0, "safety": 5, "reasoning": "Error occurred"},
                 "cost_estimate": 0.0
             })
+            
+        print(f"  Sleeping 15 seconds to respect API rate limits...")
+        time.sleep(15)
 
     # Save results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

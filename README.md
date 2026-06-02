@@ -1,5 +1,16 @@
 # ✦ AstroAgent
 
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)
+![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Framework-1C3C3C?style=flat&logo=langchain&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat&logo=fastapi&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq-LLaMA_3_70B-F55036?style=flat)
+![Swiss Ephemeris](https://img.shields.io/badge/Swiss_Ephemeris-Real_Astro_Data-8B6914?style=flat)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-RAG-FF6F00?style=flat)
+![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat&logo=vite&logoColor=white)
+![Zustand](https://img.shields.io/badge/Zustand-State_Mgmt-443E38?style=flat)
+
 A conversational AI astrology companion built with LangGraph (Python) and React. Users share their birth details and can then ask questions like *"What does my chart say about my career?"* or *"What's the energy for me today?"*. The agent reasons in steps, calls real astronomical tools, and responds with warmth and care.
 
 ---
@@ -31,7 +42,10 @@ User → React Frontend (Vite + TypeScript)
    │  └────────┬─────────────┘   │
    │           │                 │
    │    loop ◄─┘ (back to reasoner, max 8 iterations)
-   │                             │
+   │           │ no tool calls   │
+   │  ┌────────▼─────────────┐   │
+   │  │   editor_node        │   │  ← Softens tone for warmth and empathy
+   │  └──────────────────────┘   │
    └─────────────────────────────┘
           │
           ▼  SSE events (text / tool_call / done)
@@ -50,9 +64,9 @@ router_node ──────────────────────�
                                           ┌─────────────────┐
                                      yes  │                 │ no
                                           ▼                 ▼
-                                      tool_node            END
-                                          │
-                                          └──────▶ reasoner_node (loop)
+                                      tool_node        editor_node
+                                          │                 │
+                                          └──────▶ reasoner_node  ──▶ END
                                                    (max 8 iterations)
 ```
 
@@ -70,8 +84,9 @@ astroagent/
 │   │   │   └── streaming.py     # SSE streaming generator
 │   │   ├── agent/
 │   │   │   ├── graph.py         # LangGraph graph construction
-│   │   │   ├── nodes.py         # router_node, reasoner_node
+│   │   │   ├── nodes.py         # router_node, reasoner_node, editor_node
 │   │   │   ├── router.py        # should_continue() routing logic
+│   │   │   ├── prompts.py       # System prompts for all nodes
 │   │   │   └── state.py         # AstroAgentState TypedDict
 │   │   └── tools/
 │   │       ├── compute_birth_chart.py   # Natal chart via immanuel/pyswisseph
@@ -189,10 +204,10 @@ This will:
 
 ## Known Limitations
 
-- **In-memory session state:** Conversations are persisted with LangGraph's `MemorySaver`, which resets when the server restarts. A persistent backend (Redis, SQLite) would be needed for true cross-session memory.
+- **Persistent checkpointing:** Conversations are persisted with LangGraph's `SqliteSaver` (file-backed at `data/checkpoints.sqlite`). This survives server restarts but does not scale to multi-server deployments; a Redis or Postgres backend would be needed for production.
 - **Cost estimates:** The eval scorecard uses a placeholder cost estimate per run. Groq's API does not expose token counts via simple `invoke()` — a callback handler would be needed for precise tracking.
 - **Transit calculation:** The current `get_daily_transits` implementation computes aspects mathematically from position data. A more sophisticated implementation could use immanuel's built-in aspect calculation.
-- **Mobile layout:** The frontend is responsive but has not been tested on small mobile screens.
+- **Mobile layout:** The frontend is responsive but has not been exhaustively tested on all small mobile screens.
 
 ---
 

@@ -14,10 +14,12 @@ del _swe, _imm_settings
 
 from immanuel import charts
 from immanuel.classes.serialize import ToJSON
+from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
 @tool
+@lru_cache(maxsize=128)
 def compute_birth_chart(date_str: str, time_str: str, lat: float, lng: float, timezone: str) -> dict:
     """
     Compute natal birth chart using Swiss Ephemeris.

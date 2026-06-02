@@ -1,6 +1,7 @@
 import os
+import json
+from datetime import datetime
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-from langgraph.graph.message import AnyMessage
 from app.agent.state import AstroAgentState
 from app.tools.geocode_place import geocode_place
 from app.tools.compute_birth_chart import compute_birth_chart
@@ -27,8 +28,8 @@ reasoner_model = ChatGroq(
 tools = [geocode_place, compute_birth_chart, get_daily_transits, knowledge_lookup]
 reasoner_with_tools = reasoner_model.bind_tools(tools)
 
-# Keeps the last 6 messages in context for LLM memory limit management.
-RECENT_MESSAGES_TO_KEEP = 6
+# Keeps the last 3 messages in context for LLM memory limit management.
+RECENT_MESSAGES_TO_KEEP = 3
 
 
 def _summarize_messages(messages: list, existing_summary: str) -> str:
@@ -122,7 +123,6 @@ def reasoner_node(state: AstroAgentState):
         messages, existing_summary
     )
 
-
     birth_details = state.get("birth_details")
     birth_context = "No birth details provided."
     if birth_details:
@@ -136,7 +136,6 @@ def reasoner_node(state: AstroAgentState):
 
     chart_context = "No birth chart data available for the user."
     if chart_data and "error" not in chart_data:
-        import json
         chart_context = f"User's Birth Chart:\n{json.dumps(chart_data, indent=2)}"
 
     # Inject summary of older messages if present
@@ -144,7 +143,6 @@ def reasoner_node(state: AstroAgentState):
     if updated_summary:
         summary_section = f"\nEarlier in this conversation (summarized):\n{updated_summary}\n"
 
-    from datetime import datetime
     today_str = datetime.now().strftime("%Y-%m-%d")
 
     language_pref = state.get("language", "English")
@@ -169,3 +167,43 @@ def reasoner_node(state: AstroAgentState):
         # Persist the updated summary back to state
         "conversation_summary": updated_summary,
     }
+
+
+def editor_node(state: AstroAgentState):
+    """Secondary agent that refines the reasoner's output to ensure a warm, poetic tone."""
+    messages = state.get("messages", [])
+    if not messages:
+        return {}
+
+    last_msg = messages[-1]
+    
+    # If it's a tool call, we don't edit it.
+    if getattr(last_msg, "tool_calls", None):
+        return {}
+        
+    original_text = last_msg.content
+    if not original_text or not original_text.strip():
+        return {}
+
+    editor_prompt = f"""You are an editor for Aradhana, a spiritual companion.
+Your job is to take the following raw analytical response and rewrite it to be warmer, 
+more empathetic, and slightly more poetic, while preserving ALL facts and guardrails exactly.
+Do not add new information. Just soften the tone.
+
+Raw Response:
+{original_text}
+
+Provide ONLY the rewritten response."""
+
+    try:
+        response = router_model.invoke([HumanMessage(content=editor_prompt)])
+        
+        new_msg = AIMessage(content=response.content.strip())
+        if getattr(last_msg, "id", None):
+            new_msg.id = last_msg.id
+            
+        return {"messages": [new_msg]}
+    except Exception:
+        # Fallback to original if editor fails
+        return {}
+

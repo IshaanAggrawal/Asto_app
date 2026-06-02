@@ -89,7 +89,7 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6 glass-panel card-glow p-8 rounded-2xl">
               {/* Name */}
               <div>
                 <label className="block text-sm font-body font-medium text-text-secondary mb-2">

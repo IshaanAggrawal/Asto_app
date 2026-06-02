@@ -1,6 +1,6 @@
 import type { ZodiacSign } from "@/lib/constants";
-import { ZODIAC_GLYPHS } from "@/lib/constants";
 import { getSignColor } from "@/lib/zodiacUtils";
+import ZodiacIconSVG from "@/lib/zodiacIcons";
 
 interface ZodiacIconProps {
   sign: ZodiacSign;
@@ -16,13 +16,19 @@ const SIZES = {
   xl: "text-5xl w-20 h-20",
 };
 
+const SVG_SIZES = {
+  sm: 16,
+  md: 20,
+  lg: 26,
+  xl: 36,
+};
+
 export default function ZodiacIcon({
   sign,
   size = "md",
   showLabel = false,
   className = "",
 }: ZodiacIconProps) {
-  const glyph = ZODIAC_GLYPHS[sign] || "★";
   const color = getSignColor(sign);
 
   return (
@@ -36,7 +42,7 @@ export default function ZodiacIcon({
           filter: `drop-shadow(0 0 6px ${color}30)`,
         }}
       >
-        {glyph}
+        <ZodiacIconSVG sign={sign} size={SVG_SIZES[size]} color={color} />
       </div>
       {showLabel && (
         <span className="text-xs font-body text-text-secondary">{sign}</span>

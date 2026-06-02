@@ -4,40 +4,32 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 
-const ROUTER_STEPS = [
-  "Assessing the Prompt",
-  "Analyzing Intent",
-  "Selecting Astrology Tools",
-];
-
-const REASONER_STEPS = [
+const THINKING_STEPS = [
   "Gathering Relevant Context",
-  "Fetching Vector DB",
   "Consulting Ephemeris Data",
   "Analyzing Astrological Alignments",
   "Synthesizing Interpretation",
   "Finalizing Insights"
 ];
 
-function ThinkingStatus({ isRouter }: { isRouter: boolean }) {
+function ThinkingStatus() {
   const [step, setStep] = useState(0);
-  const steps = isRouter ? ROUTER_STEPS : REASONER_STEPS;
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setStep((s) => (s + 1) % steps.length);
+      setStep((s) => (s + 1) % THINKING_STEPS.length);
     }, 2500);
     return () => clearInterval(interval);
-  }, [steps.length]);
+  }, []);
 
   return (
     <span className="text-accent ml-2 font-normal flex items-center gap-1">
       <span className="flex gap-0.5">
         <span className="animate-bounce">.</span>
-        <span className="animate-bounce" style={{animationDelay: "0.1s"}}>.</span>
-        <span className="animate-bounce" style={{animationDelay: "0.2s"}}>.</span>
-      </span> 
-      <span className="animate-pulse">{steps[step]}</span>
+        <span className="animate-bounce" style={{ animationDelay: "0.1s" }}>.</span>
+        <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>.</span>
+      </span>
+      <span className="animate-pulse">{THINKING_STEPS[step]}</span>
     </span>
   );
 }
@@ -92,9 +84,8 @@ export default function MessageBubble({ message, isStreaming = false }: MessageB
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
       <div
-        className={`max-w-[85%] md:max-w-[75%] ${
-          isUser ? "rounded-2xl rounded-br-sm px-5 py-4" : "py-2 px-1"
-        }`}
+        className={`max-w-[85%] md:max-w-[75%] ${isUser ? "rounded-2xl rounded-br-sm px-5 py-4" : "py-2 px-1"
+          }`}
         style={
           isUser
             ? {
@@ -152,59 +143,17 @@ export default function MessageBubble({ message, isStreaming = false }: MessageB
 
         {/* Message content */}
         <div
-          className={`text-sm leading-relaxed font-body prose prose-invert max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 ${isUser ? "text-text-primary" : "text-text-primary"
-            } ${isStreaming && !smoothedContent ? "typing-cursor" : ""}`}
+          className={`text-sm leading-relaxed font-body prose prose-invert max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 text-text-primary ${isStreaming && !smoothedContent ? "typing-cursor" : ""}`}
         >
           {smoothedContent ? (
-            (() => {
-              const text = smoothedContent;
-              const thinkMatches = [...text.matchAll(/<think>([\s\S]*?)(?:<\/think>|$)/gi)];
-              const isThinkingActive = text.includes("<think>") && !text.includes("</think>");
-              
-              if (thinkMatches.length > 0) {
-                const thinkText = thinkMatches.map(m => m[1].trim()).join("\n\n---\n\n");
-                const restText = text.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
-                
-                // If there are multiple think blocks, the first one is the router (Assessing), second is reasoner (Interpreting)
-                const isRouterThinking = thinkMatches.length === 1 && isThinkingActive;
-                const isReasonerThinking = thinkMatches.length > 1 && isThinkingActive;
-                
-                return (
-                  <>
-                    <details className="mb-4 group">
-                      <summary className="cursor-pointer text-xs font-semibold text-accent/70 hover:text-accent transition-colors flex items-center gap-2 select-none">
-                        <span className="group-open:rotate-90 transition-transform">▶</span>
-                        Thought Process
-                        {isRouterThinking && <ThinkingStatus isRouter={true} />}
-                        {isReasonerThinking && <ThinkingStatus isRouter={false} />}
-                      </summary>
-                      <div className="mt-2 text-xs text-text-muted border-l-2 border-accent/30 pl-3 py-1 whitespace-pre-wrap font-mono">
-                        {thinkText}
-                      </div>
-                    </details>
-                    {restText && (
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]} 
-                        rehypePlugins={[rehypeRaw]}
-                      >
-                        {restText}
-                      </ReactMarkdown>
-                    )}
-                  </>
-                );
-              }
-              
-              return (
-                <ReactMarkdown 
-                  remarkPlugins={[remarkGfm]} 
-                  rehypePlugins={[rehypeRaw]}
-                >
-                  {text}
-                </ReactMarkdown>
-              );
-            })()
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
+            >
+              {smoothedContent}
+            </ReactMarkdown>
           ) : (
-            isStreaming ? "" : "..."
+            isStreaming ? <ThinkingStatus /> : "..."
           )}
           {isStreaming && message.content && (
             <span className="inline-block w-0.5 h-4 ml-0.5 bg-accent animate-pulse" />
