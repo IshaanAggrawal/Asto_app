@@ -13,14 +13,23 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-@tool
-def get_daily_transits(natal_chart: dict, date_str: str = None) -> dict:
+from app.tools.compute_birth_chart import _compute_birth_chart
+
+@tool("get_daily_transits")
+def get_daily_transits(birth_date: str, birth_time: str, lat: float, lng: float, timezone: str, date_str: str = None) -> dict:
     """
     Get current planetary transits and their aspects to the natal chart.
-    natal_chart: output from compute_birth_chart
-    date_str: YYYY-MM-DD, defaults to today
+    birth_date: YYYY-MM-DD
+    birth_time: HH:MM (24h)
+    lat: latitude from geocode_place
+    lng: longitude from geocode_place
+    timezone: IANA string from geocode_place
+    date_str: YYYY-MM-DD transit date, defaults to today
     """
     try:
+        natal_chart = _compute_birth_chart(birth_date, birth_time, lat, lng, timezone)
+        if "error" in natal_chart:
+            return natal_chart
         if not date_str:
             date_str = datetime.now().strftime("%Y-%m-%d")
             
@@ -57,9 +66,10 @@ def get_daily_transits(natal_chart: dict, date_str: str = None) -> dict:
                 if t_name not in planets_to_check: continue
                     
                 t_deg = t_planet.get("longitude", {}).get("raw", 0.0)
-            
-            for n_planet_name in planets_to_check:
-                if n_planet_name in natal_chart:
+                
+                for n_planet_name in planets_to_check:
+                    if n_planet_name not in natal_chart:
+                        continue
                     n_deg = natal_chart[n_planet_name].get("degree", 0.0)
                     
                     # Calculate angular distance

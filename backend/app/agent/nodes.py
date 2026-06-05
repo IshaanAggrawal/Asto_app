@@ -21,7 +21,7 @@ router_model = ChatGroq(
 
 reasoner_model = ChatGroq(
     model=os.getenv("LLM_MODEL", "llama3-70b-8192"),
-    temperature=0.7
+    temperature=0.0
 )
 
 # Binds astrology tools to the reasoning engine.

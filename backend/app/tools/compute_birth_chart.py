@@ -18,16 +18,8 @@ from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 
-@tool
 @lru_cache(maxsize=128)
-def compute_birth_chart(date_str: str, time_str: str, lat: float, lng: float, timezone: str) -> dict:
-    """
-    Compute natal birth chart using Swiss Ephemeris.
-    date_str: YYYY-MM-DD
-    time_str: HH:MM (24h) or "unknown" — if unknown use 12:00 and flag it
-    lat/lng: from geocode_place
-    timezone: IANA string e.g. "Asia/Kolkata"
-    """
+def _compute_birth_chart(date_str: str, time_str: str, lat: float, lng: float, timezone: str) -> dict:
     try:
         # Validate date
         try:
@@ -44,6 +36,15 @@ def compute_birth_chart(date_str: str, time_str: str, lat: float, lng: float, ti
             time_str = "12:00"
         elif ":" not in time_str:
             time_str = "12:00"
+        
+        # Validate timezone
+        from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+        timezone = str(timezone)  # Ensure it's a string, not int
+        try:
+            ZoneInfo(timezone)
+        except (ZoneInfoNotFoundError, KeyError, Exception):
+            logger.warning(f"Invalid timezone '{timezone}', falling back to UTC")
+            timezone = "UTC"
             
         date_time_str = f"{date_str} {time_str}"
         
@@ -102,3 +103,14 @@ def compute_birth_chart(date_str: str, time_str: str, lat: float, lng: float, ti
     except Exception as e:
         logger.error(f"Error computing birth chart: {e}")
         return {"error": f"An error occurred while computing the birth chart: {str(e)}"}
+
+@tool("compute_birth_chart")
+def compute_birth_chart(date_str: str, time_str: str, lat: float, lng: float, timezone: str) -> dict:
+    """
+    Compute natal birth chart using Swiss Ephemeris.
+    date_str: YYYY-MM-DD
+    time_str: HH:MM (24h) or "unknown" — if unknown use 12:00 and flag it
+    lat/lng: from geocode_place
+    timezone: IANA string e.g. "Asia/Kolkata"
+    """
+    return _compute_birth_chart(date_str, time_str, lat, lng, timezone)

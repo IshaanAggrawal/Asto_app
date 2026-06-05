@@ -6,10 +6,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-@tool
 @lru_cache(maxsize=128)
-def geocode_place(place_name: str) -> dict:
-    """Resolve a place name to lat/lng/timezone. Required before computing birth chart."""
+def _geocode_place(place_name: str) -> dict:
     try:
         geolocator = Nominatim(user_agent="astroagent/1.0")
         location = geolocator.geocode(place_name, timeout=10)
@@ -32,3 +30,8 @@ def geocode_place(place_name: str) -> dict:
     except Exception as e:
         logger.error(f"Geocoding error: {e}")
         return {"error": f"An error occurred while looking up the location: {str(e)}"}
+
+@tool("geocode_place")
+def geocode_place(place_name: str) -> dict:
+    """Resolve a place name to lat/lng/timezone. Required before computing birth chart."""
+    return _geocode_place(place_name)

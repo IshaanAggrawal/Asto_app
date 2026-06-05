@@ -58,7 +58,7 @@ def _get_collection():
             
     return _collection
 
-@tool
+@tool("knowledge_lookup")
 def knowledge_lookup(query: str) -> str:
     """Search the astrology knowledge base for interpretations, meanings, and guidance."""
     try:

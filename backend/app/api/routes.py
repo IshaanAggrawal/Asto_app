@@ -110,11 +110,15 @@ async def get_transits(chart_id: str, date: Optional[str] = None):
         raise HTTPException(status_code=404, detail="Chart not found")
         
     stored = CHART_STORE[chart_id]
-    chart_data = stored["chart"]
+    birth_details = stored["birth_details"]
     
     try:
         transits = get_daily_transits.invoke({
-            "natal_chart": chart_data,
+            "birth_date": birth_details["dob"],
+            "birth_time": birth_details["tob"],
+            "lat": birth_details["lat"],
+            "lng": birth_details["lng"],
+            "timezone": birth_details["timezone"],
             "date_str": date
         })
         

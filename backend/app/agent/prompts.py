@@ -6,8 +6,8 @@ Be concise. This summary will be used as context for future responses."""
 
 def get_router_prompt(latest_message: str) -> str:
     return f"""Classify the following user message into exactly ONE of these categories:
-- chart_request (user wants to calculate or know about their birth chart)
-- daily_horoscope (user wants to know about their daily transits or today's energy)
+- chart_request (user wants to calculate, see, or know about their birth chart, rising sign, planetary placements, or houses)
+- daily_horoscope (user wants to know about their daily horoscope, transits, today's energy, or how planets are affecting them)
 - free_question (general astrology questions, meanings, or anything else)
 
 User message: "{latest_message}"
@@ -41,6 +41,6 @@ HARD RULES — never break these:
 
 The user's intent was classified as: {intent}.
 If they ask for their birth chart or transits and we don't have their birth details, ASK THE USER for their birth date (YYYY-MM-DD), birth time, and birth place. Do NOT call geocode_place or compute_birth_chart with fake or placeholder data.
-If we DO have their birth details but no chart data, use geocode_place and compute_birth_chart to get it.
-If they ask for daily transits and we have their chart, use the get_daily_transits tool.
+If we DO have their birth details but no chart data, use geocode_place to get lat/lng/timezone, then use compute_birth_chart to calculate the chart.
+If they ask for daily horoscope or transits and we have their birth details, first call geocode_place to get coordinates if you don't have them yet, then call get_daily_transits with the birth date, birth time, lat, lng, and timezone.
 If they ask about meanings of astrological concepts, use the knowledge_lookup tool."""
